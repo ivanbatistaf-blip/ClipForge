@@ -1,44 +1,40 @@
 import streamlit as st
 import requests
 
-# CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="ClipForge", layout="centered")
 
-# TÍTULO
 st.title("🎬 ClipForge - Gerador de Vídeos com IA")
 
-# CAMPO DE ROTEIRO
 roteiro = st.text_area("Digite seu roteiro:", height=200)
 
-# BOTÃO
+# Estado para manter o vídeo após clique
+if "video_pronto" not in st.session_state:
+    st.session_state.video_pronto = False
+
 if st.button("Gerar vídeo"):
     if roteiro.strip() != "":
-        
-        st.success("Roteiro recebido com sucesso!")
-
-        st.write("📜 Seu roteiro:")
-        st.write(roteiro)
-
-        # LINK DE VÍDEO DE TESTE
-        video_url = "https://www.w3schools.com/html/mov_bbb.mp4"
-
-        st.info("Gerando vídeo...")
-
-        # MOSTRAR VÍDEO
-        st.video(video_url)
-
-        # BAIXAR VÍDEO
-        try:
-            video_bytes = requests.get(video_url).content
-
-            st.download_button(
-                label="📥 Baixar vídeo",
-                data=video_bytes,
-                file_name="clipforge_video.mp4",
-                mime="video/mp4"
-            )
-        except:
-            st.error("Erro ao carregar vídeo para download.")
-
+        st.session_state.video_pronto = True
     else:
-        st.warning("Digite um roteiro antes de gerar o vídeo!")
+        st.warning("Digite um roteiro!")
+
+# Se já gerou vídeo, mostra tudo
+if st.session_state.video_pronto:
+
+    st.success("Vídeo gerado com sucesso!")
+
+    video_url = "https://www.w3schools.com/html/mov_bbb.mp4"
+
+    st.video(video_url)
+
+    try:
+        response = requests.get(video_url)
+        video_bytes = response.content
+
+        st.download_button(
+            label="📥 Baixar vídeo",
+            data=video_bytes,
+            file_name="clipforge_video.mp4",
+            mime="video/mp4"
+        )
+    except:
+        st.error("Erro ao carregar vídeo.")
