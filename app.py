@@ -1,9 +1,11 @@
 import streamlit as st
 import requests
+from moviepy.editor import ImageClip, AudioFileClip
+import tempfile
 
-API_KEY = "af71ddd70ccbed3d1155ddda8e7ffaa46f5694f81dcc2e66b34aba267cb10296"
+ELEVEN_API_KEY = st.secrets["ELEVEN_API_KEY"]
 
-st.title("🎬 ClipForge - IA de Vídeo")
+st.title("🎬 ClipForge IA - Gerador de Vídeo")
 
 roteiro = st.text_area("Digite seu roteiro")
 
@@ -11,37 +13,60 @@ def gerar_audio(texto):
     url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
 
     headers = {
-        "xi-api-key": API_KEY,
+        "xi-api-key": ELEVEN_API_KEY,
         "Content-Type": "application/json"
     }
 
     data = {
-        "text": texto,
-        "voice_settings": {
-            "stability": 0.5,
-            "similarity_boost": 0.5
-        }
+        "text": texto
     }
 
     response = requests.post(url, headers=headers, json=data)
-
     return response.content
 
-if st.button("Gerar narração"):
+def gerar_imagem():
+    # imagem simples (pode trocar depois por IA real)
+    return "https://picsum.photos/800/600"
+
+if st.button("Gerar vídeo"):
     if roteiro:
 
-        st.info("Gerando voz com IA...")
+        st.info("Gerando áudio...")
+        audio_bytes = gerar_audio(roteiro)
 
-        audio = gerar_audio(roteiro)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
+            f.write(audio_bytes)
+            audio_path = f.name
 
-        st.audio(audio)
+        st.info("Baixando imagem...")
+        img_url = gerar_imagem()
 
-        st.download_button(
-            "📥 Baixar áudio",
-            data=audio,
-            file_name="narracao.mp3",
-            mime="audio/mpeg"
-        )
+        img_data = requests.get(img_url).content
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
+            f.write(img_data)
+            img_path = f.name
+
+        st.info("Montando vídeo...")
+
+        audio_clip = AudioFileClip(audio_path)
+        video = ImageClip(img_path).set_duration(audio_clip.duration)
+        video = video.set_audio(audio_clip)
+
+        video_path = "video_final.mp4"
+        video.write_videofile(video_path, fps=24)
+
+        st.success("Vídeo pronto!")
+
+        st.video(video_path)
+
+        with open(video_path, "rb") as f:
+            st.download_button(
+                "📥 Baixar vídeo",
+                data=f,
+                file_name="video.mp4",
+                mime="video/mp4"
+            )
 
     else:
         st.warning("Digite um roteiro")
