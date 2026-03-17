@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_KEY = "SUA_API_KEY_AQUI"
+API_KEY = "af71ddd70ccbed3d1155ddda8e7ffaa46f5694f81dcc2e66b34aba267cb10296"
 
 st.title("🎬 ClipForge - IA de Vídeo")
 
