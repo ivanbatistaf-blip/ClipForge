@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
-from moviepy.editor import ImageClip, AudioFileClip
+from moviepy.video.VideoClip import ImageClip
+from moviepy.audio.io.AudioFileClip import AudioFileClip
 import tempfile
 
 ELEVEN_API_KEY = st.secrets["ELEVEN_API_KEY"]
